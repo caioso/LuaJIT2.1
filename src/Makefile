@@ -222,6 +222,9 @@ ifneq (,$(findstring LJ_TARGET_ARM64 ,$(TARGET_TESTARCH)))
 else
 ifneq (,$(findstring LJ_TARGET_PPC ,$(TARGET_TESTARCH)))
   TARGET_LJARCH= ppc
+  ifneq (,$(findstring LJ_ARCH_PPC64, $(TARGET_TESTARCH)))
+    TARGET_LJARCH_64= 64
+  endif
 else
 ifneq (,$(findstring LJ_TARGET_MIPS ,$(TARGET_TESTARCH)))
   ifneq (,$(findstring MIPSEL ,$(TARGET_TESTARCH)))
@@ -432,6 +435,9 @@ endif
 endif
 
 DASM_FLAGS= $(DASM_XFLAGS) $(DASM_AFLAGS)
+ifeq ($(TARGET_LJARCH_64),64)
+  DASM_ARCH= ppc64
+endif
 DASM_DASC= vm_$(DASM_ARCH).dasc
 
 BUILDVM_O= host/buildvm.o host/buildvm_asm.o host/buildvm_peobj.o \

@@ -140,11 +140,36 @@ static void emit_asm_wordreloc(BuildCtx *ctx, uint8_t *p, int n,
     fprintf(ctx->fp, "\t%s %d, %d, " TOCPREFIX "%s\n",
 	    (ins & 1) ? "bcl" : "bc", (ins >> 21) & 31, (ins >> 16) & 31, sym);
   } else if ((ins >> 26) == 18) {
+#if LJ_ARCH_PPC64 && !LJ_TARGET_PS3
+    char * pch = strrchr(sym, '@');
+    if (pch) {
+      // A simple 'bl extern target@plt' has to be:
+      // 'addis 11, 2, target@ha; ld 12,target@l(11)'
+      char name[pch - sym + 1];
+      memcpy(name, &sym[0], pch - sym);
+      name[pch - sym] = '\0';
+      switch (*(pch+1)) {
+      case '1':
+        fprintf(ctx->fp, "\t%s%s%s\n", "addis 11, 2, ",name,"@ha");
+        break;
+      case '2':
+        fprintf(ctx->fp, "\t%s%s%s\n", "ld 12,",name,"@l(11)");
+        break;
+      default:
+        fprintf(stderr,
+        "Error: unsupported opcode %08x for %s symbol relocation.\n", ins, sym);
+        exit(1);
+	break;
+      }
+    } else {
+	fprintf(ctx->fp, "\t%s " TOCPREFIX "%s\n", (ins & 1) ? "bl" : "b", sym);
+    }
+#else
     fprintf(ctx->fp, "\t%s " TOCPREFIX "%s\n", (ins & 1) ? "bl" : "b", sym);
+#endif
   } else {
     fprintf(stderr,
-	    "Error: unsupported opcode %08x for %s symbol relocation.\n",
-	    ins, sym);
+    "Error: unsupported opcode %08x for %s symbol relocation.\n", ins, sym);
     exit(1);
   }
 #elif LJ_TARGET_MIPS
@@ -237,6 +262,10 @@ void emit_asm(BuildCtx *ctx)
   int i, rel;
 
   fprintf(ctx->fp, "\t.file \"buildvm_%s.dasc\"\n", ctx->dasm_arch);
+#if LJ_ARCH_PPC64 && !LJ_TARGET_PS3
+  fprintf(ctx->fp, "\t.abiversion 2\n");
+#endif
+
   fprintf(ctx->fp, "\t.text\n");
   emit_asm_align(ctx, 4);
 

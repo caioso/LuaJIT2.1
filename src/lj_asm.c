@@ -343,7 +343,7 @@ static Reg ra_rematk(ASMState *as, IRRef ref)
   } else if (emit_canremat(ASMREF_L) && ir->o == IR_KPRI) {
     lua_assert(irt_isnil(ir->t));  /* REF_NIL stores ASMREF_L register. */
     emit_getgl(as, r, cur_L);
-#if LJ_64
+#if LJ_64 && !LJ_ARCH_PPC64
   } else if (ir->o == IR_KINT64) {
     emit_loadu64(as, r, ir_kint64(ir)->u64);
 #endif

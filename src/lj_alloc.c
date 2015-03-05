@@ -174,7 +174,7 @@ static LJ_AINLINE int CALL_MUNMAP(void *ptr, size_t size)
 #endif
 #define MMAP_FLAGS		(MAP_PRIVATE|MAP_ANONYMOUS)
 
-#if LJ_64 && !LJ_GC64
+#if LJ_64 && !LJ_GC64 && !LJ_ARCH_PPC64
 /* 64 bit mode with 32 bit pointers needs special support for allocating
 ** memory in the lower 2GB.
 */

@@ -271,7 +271,7 @@ typedef const TValue cTValue;
 #define LJ_TNUMX		(~13u)
 
 /* Integers have itype == LJ_TISNUM doubles have itype < LJ_TISNUM */
-#if LJ_64 && !LJ_GC64
+#if LJ_64 && !LJ_GC64 && !LJ_ARCH_PPC64
 #define LJ_TISNUM		0xfffeffffu
 #else
 #define LJ_TISNUM		LJ_TNUMX
